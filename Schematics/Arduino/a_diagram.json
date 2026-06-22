@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "author": "Thiên An Hồ Lê",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-arduino-uno",
+      "id": "uno",
+      "top": 202.2,
+      "left": 201,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-mfrc522",
+      "id": "rfid1",
+      "top": 0,
+      "left": 160,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": 169.2,
+      "left": 618.2,
+      "attrs": { "color": "green", "label": "IN1" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led2",
+      "top": 236.4,
+      "left": 618.2,
+      "attrs": { "color": "green", "label": "IN2" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led3",
+      "top": 322.8,
+      "left": 618.2,
+      "attrs": { "color": "green", "label": "ENA" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 176.75,
+      "left": 489.6,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": 253.55,
+      "left": 489.6,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r3",
+      "top": 320.75,
+      "left": 499.2,
+      "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": 447.8,
+      "left": 192,
+      "attrs": { "label": "Limit SW OPEN" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn2",
+      "top": 447.8,
+      "left": 316.8,
+      "attrs": { "label": "Limit SW CLOSE" }
+    },
+    {
+      "type": "board-mfrc522",
+      "id": "rfid2",
+      "top": -31.45,
+      "left": 387.44,
+      "attrs": {}
+    }
+  ],
+  "connections": [
+    ["rfid1:SDA", "uno:10", "blue", ["v0"]],
+    ["rfid1:SCK", "uno:13", "blue", ["v0"]],
+    ["rfid1:MOSI", "uno:11", "blue", ["v0"]],
+    ["rfid1:MISO", "uno:12", "blue", ["v0"]],
+    ["rfid1:RST", "uno:9", "blue", ["v0"]],
+    ["rfid1:3.3V", "uno:3.3V", "red", ["v0"]],
+    ["rfid1:GND", "uno:GND.1", "black", ["v0"]],
+    ["uno:5", "r1:1", "green", ["v-28.8", "h80.6"]],
+    ["r1:2", "led1:A", "green", ["v48", "h104.4", "v-19.2"]],
+    ["led1:K", "uno:GND.2", "black", ["v30", "h-390"]],
+    ["uno:6", "r2:1", "green", ["v-19.2", "h90.1"]],
+    ["r2:2", "led2:A", "green", ["v38.4", "h104.4", "v-19.2"]],
+    ["led2:K", "uno:GND.2", "black", ["v30", "h-390"]],
+    ["r3:2", "led3:A", "green", ["v67.2", "h94.8", "v-28.8"]],
+    ["led3:K", "uno:GND.2", "black", ["v30", "h-390"]],
+    ["btn1:1.l", "uno:7", "yellow", ["h-28.8", "v-280.6", "h226.8"]],
+    ["btn1:2.l", "uno:GND.3", "black", ["h-6.4", "v-50", "h225.4"]],
+    ["btn2:1.l", "uno:8", "yellow", ["h-28.8", "v-268.8", "h86"]],
+    ["btn2:2.l", "uno:GND.3", "black", ["h-9.6", "v-57.4", "h67.2", "v-30.9"]],
+    ["r3:1", "uno:3", "green", ["h-76.8", "v-105.6", "h5.6"]],
+    ["rfid2:SDA", "uno:10", "blue", ["h-38.4", "v124.8", "h-0.7"]],
+    ["rfid2:SCK", "uno:13", "blue", ["h-67.2", "v144", "h-0.4"]],
+    ["rfid2:MOSI", "uno:11", "blue", ["h-48", "v182.4"]],
+    ["rfid2:MISO", "uno:12", "blue", ["h-57.6", "v172.8"]],
+    ["rfid2:RST", "uno:9", "blue", ["h0"]],
+    ["rfid2:3.3V", "uno:3.3V", "red", ["h0"]],
+    ["rfid2:GND", "uno:GND.2", "black", ["h0"]]
+  ],
+  "serialMonitor": { "display": "always" },
+  "dependencies": {}
+}
