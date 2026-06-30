@@ -1,4 +1,0 @@
-[wokwi]
-version = 1
-firmware = "build/Arduino_Node.ino.hex"
-elf = "build/Arduino_Node.ino.elf"

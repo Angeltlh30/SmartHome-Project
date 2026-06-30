@@ -1,9 +1,0 @@
-{
-  "additionalFiles": "..\\..",
-  "compiler.optimization_flags": "-Os",
-  "customBuildProperties": "",
-  "fqbn": "esp32:esp32:esp32",
-  "hardwareFolders": "C:\\Users\\huynh\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.10,C:\\Users\\huynh\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.3.10",
-  "otherLibrariesFolders": "C:\\Users\\huynh\\Documents\\Arduino\\libraries",
-  "sketchLocation": "D:\\Class\\tailieuki4\\IOT102 - SE2031\\SmartHome-Project\\ESP32_Gateway"
-}
