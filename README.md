@@ -1,6 +1,6 @@
 # Smart Home — Đồ án IOT102
 
-Hệ thống 2 board chạy độc lập trong Wokwi (offline; Blynk/WiFi để sau):
+Hệ thống 2 board chạy độc lập trong Wokwi:
 
 - **`ESP32_Gateway/`** — trong nhà: keypad mật khẩu + LCD + khóa cửa trước/sau (relay), đèn/quạt (relay), báo cháy (MQ2 + buzzer), sào phơi tự động.
 - **`Arduino_Node/`** — cổng & gara: RFID RC522 ×2, radar bật đèn, motor cửa.
