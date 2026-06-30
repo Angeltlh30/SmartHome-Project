@@ -1,62 +1,13 @@
 /*
   ====================================================================================
-  BẢN ĐỒ ĐẤU DÂY VÀ SƠ ĐỒ CHÂN PHẦN CỨNG TOÀN HỆ THỐNG (HARDWARE WIRING MAP)
-  Mạch điều khiển trung tâm: Arduino UNO / Nano
+  BẢN ĐỒ ĐẤU DÂY (CẬP NHẬT GIAO TIẾP 2 CHIỀU)
   ====================================================================================
+  [Giữ nguyên các kết nối Cảm biến, Servo, PCF8574, RFID như cũ]
   
-  1. GIAO TIẾP I2C (MODULE MỞ RỘNG CHÂN PCF8574 - ĐỊA CHỈ 0x20)
-     - SDA (PCF8574)  --> Chân A4 của Arduino
-     - SCL (PCF8574)  --> Chân A5 của Arduino
-     - VCC & GND      --> 5V và GND chung
-     [Phân bổ các chân mở rộng trên IC PCF8574]:
-       + P0 (Output)  --> Nối cực Dương (+) của Đèn LED Cổng chính
-       + P1 (Output)  --> Nối cực Dương (+) của Đèn LED Garage
-       + P2 (Input)   --> Nút nhấn Mở/Đóng Cổng chính (Chân còn lại nối GND)
-       + P3 (Input)   --> Nút nhấn Mở/Dừng/Đóng Garage (Chân còn lại nối GND)
-       + P4 (Input)   --> Công tắc hành trình TRÊN (Chạm = LOW, ngắt động cơ kéo Lên)
-       + P5 (Input)   --> Công tắc hành trình DƯỚI (Chạm = LOW, ngắt động cơ kéo Xuống)
-
-  2. HỆ THỐNG ĐỘNG CƠ SERVO (KẾT NỐI TRỰC TIẾP ARDUINO)
-     - Servo Cổng (Loại 180 độ):
-       + Dây Cam/Vàng (Tín hiệu) --> Chân D3
-       + Dây Đỏ (VCC)            --> 5V (Nên dùng nguồn ngoài hoặc cắm tụ bù áp)
-       + Dây Nâu/Đen (GND)       --> GND chung
-     - Servo Garage (Loại 360 độ - Tời kéo):
-       + Dây Cam/Vàng (Tín hiệu) --> Chân D5
-       + Dây Đỏ (VCC)            --> 5V
-       + Dây Nâu/Đen (GND)       --> GND chung
-
-  3. CẢM BIẾN SIÊU ÂM HC-SR04 (ĐO KHOẢNG CÁCH BẬT ĐÈN CỔNG)
-     - VCC            --> 5V
-     - GND            --> GND chung
-     - TRIG (Phát)    --> Chân D6
-     - ECHO (Thu)     --> Chân D7
-
-  4. NÚT NHẤN BẬT/TẮT ĐÈN GARAGE (ĐỘC LẬP)
-     - Chân 1         --> Chân D8 của Arduino (Sử dụng INPUT_PULLUP nội bộ)
-     - Chân 2         --> GND chung
-
-  5. HỆ THỐNG ĐỌC THẺ TỪ RFID RC522 (GIAO TIẾP SPI DÙNG CHUNG BUS)
-     ⚠️ CẢNH BÁO: Module RC522 CHỈ CHỊU ĐƯỢC 3.3V. TUYỆT ĐỐI KHÔNG CẤP 5V.
-     
-     * Cụm chân SPI dùng chung (Mắc song song cho CẢ 2 MODULE):
-       - SCK          --> Chân D13
-       - MISO         --> Chân D12
-       - MOSI         --> Chân D11
-       - VCC          --> Chân 3.3V của Arduino
-       - GND          --> GND chung
-       
-     * Chân điều khiển ĐỘC LẬP cho MODULE RFID 1 (Cổng chính):
-       - SDA (SS/CS)  --> Chân D10
-       - RST (Reset)  --> Chân A0 (Dùng kỹ thuật bật/tắt nguồn chống nhiễu)
-
-     * Chân điều khiển ĐỘC LẬP cho MODULE RFID 2 (Garage):
-       - SDA (SS/CS)  --> Chân D4
-       - RST (Reset)  --> Chân A1 (Dùng kỹ thuật bật/tắt nguồn chống nhiễu)
-       
-  6. [PHẦN MỚI] GIAO TIẾP VỚI MẠCH ESP32 (NHẬN LỆNH TỪ APP BLYNK)
-     - Chân D2 (RX)   <-- Nối với chân TX2 (GPIO 17) của mạch ESP32
-     - GND            <-- Nối chung với GND của mạch ESP32
+  [GIAO TIẾP VỚI ESP32]:
+     - Chân D2 (RX Arduino) <-- Nối với chân TX2 (GPIO 17) của ESP32
+     - Chân D9 (TX Arduino) --> (Qua trở hạ áp) --> Nối với chân RX2 (GPIO 16) của ESP32
+     - GND                  <-- Nối chung với GND của ESP32
   ====================================================================================
 */
 
@@ -65,15 +16,14 @@
 #include <SPI.h>
 #include <MFRC522.h>
 #include <PCF8574.h>
-#include <SoftwareSerial.h> // Thư viện đọc tín hiệu từ ESP32
+#include <SoftwareSerial.h> 
 
-// --- CẤU HÌNH GIAO TIẾP VỚI ESP32 ---
-SoftwareSerial espSerial(2, 3); // RX = Chân 2 (nhận tín hiệu), TX = Chân 3 (không dùng)
+// --- ĐỔI CHÂN TX SANG D9 ĐỂ TRÁNH TRÙNG VỚI SERVO CỔNG Ở D3 ---
+SoftwareSerial espSerial(2, 9); // RX = 2, TX = 9
 
 // --- CẤU HÌNH ĐỊA CHỈ PCF8574 ---
 PCF8574 pcf(0x20); 
 
-// --- ĐỊNH NGHĨA CÁC CHÂN IC PCF8574 ---
 #define P_LED_CONG         0 
 #define P_LED_GARAGE       1 
 #define P_NUT_CONG         2 
@@ -81,32 +31,25 @@ PCF8574 pcf(0x20);
 #define P_CTHT_GARAGE_LEN  4 
 #define P_CTHT_GARAGE_XUONG 5 
 
-// --- ĐỊNH NGHĨA CÁC CHÂN TRỰC TIẾP TRÊN ARDUINO ---
 #define SERVO_CONG_PIN     3 
 #define SERVO_GARAGE_PIN   5 
 #define TRIG_CONG          6 
 #define ECHO_CONG          7 
 #define NUT_DEN_GARAGE     8 
 
-// Chân cho 2 module RFID
 #define RFID_1_SS          10 
 #define RFID_1_RST         A0 
 #define RFID_2_SS          4  
 #define RFID_2_RST         A1 
 
-// ================= CẤU HÌNH TỐC ĐỘ SERVO GARAGE =================
-// Chuẩn của Servo 360: 90 là đứng im. Càng xa 90 quay càng nhanh.
-const int TOC_DO_LEN = 180;    // Quay nhanh tối đa chiều lên
-const int TOC_DO_XUONG = 50;   // Quay nhanh chiều xuống
-// ================================================================
+const int TOC_DO_LEN = 180;    
+const int TOC_DO_XUONG = 50;   
 
-// --- KHỞI TẠO ĐỐI TƯỢNG NGOẠI VI ---
 Servo servoCong;
 Servo servoGarage;
 MFRC522 rfid1(RFID_1_SS, RFID_1_RST); 
 MFRC522 rfid2(RFID_2_SS, RFID_2_RST); 
 
-// --- BIẾN TRẠNG THÁI ĐỘC LẬP ---
 bool trangThaiCong = false; 
 
 enum TrangThaiGarage { STOP, DANG_LEN, DANG_XUONG }; 
@@ -118,15 +61,29 @@ bool lastNutCong = HIGH;
 bool lastNutGarage = HIGH;
 bool lastNutDenGarage = HIGH;
 
-// Cờ bắt sườn thẻ RFID (Chống kẹt thẻ)
 bool theHienDien1 = false; int demVang1 = 0; 
 bool theHienDien2 = false; int demVang2 = 0; 
 
 const int NGUONG_KHOANG_CACH = 20; 
 
+// =================================================================
+// [PHẦN MỚI] HÀM HỖ TRỢ: BÁO CÁO TRẠNG THÁI CHO ESP32
+// =================================================================
+void baoCaoTrangThaiCua(char thietBi, bool trangThaiHienTai) {
+  if (thietBi == 'C') { // Thiết bị: Cổng chính
+    if (trangThaiHienTai) espSerial.write('U'); // Ký hiệu U: Đã Mở
+    else espSerial.write('u');                  // Ký hiệu u: Đã Đóng
+  } 
+  else if (thietBi == 'G') { // Thiết bị: Garage
+    if (trangThaiHienTai) espSerial.write('V'); // Ký hiệu V: Đã Mở
+    else espSerial.write('v');                  // Ký hiệu v: Đã Đóng
+  }
+}
+// =================================================================
+
 void setup() {
   Serial.begin(9600);
-  espSerial.begin(9600); // Khởi động cổng nghe ngóng ESP32
+  espSerial.begin(9600); 
   
   Wire.begin(); 
   SPI.begin();  
@@ -154,34 +111,34 @@ void setup() {
   servoGarage.attach(SERVO_GARAGE_PIN);
   servoGarage.write(90); 
 
-  Serial.println("He thong da san sang! (Da tich hop lang nghe App Blynk tu ESP32)");
+  Serial.println("He thong da san sang! (Da tich hop giao tiep 2 chieu)");
 }
 
 void loop() {
   // =================================================================================
-  // [PHẦN MỚI] ĐỌC LỆNH TỪ APP BLYNK (THÔNG QUA ESP32) ĐỂ KÍCH HOẠT ĐỘNG CƠ
+  // ĐỌC LỆNH TỪ APP BLYNK (THÔNG QUA ESP32) ĐỂ KÍCH HOẠT ĐỘNG CƠ
   // =================================================================================
   if (espSerial.available() > 0) {
     char blynkCmd = espSerial.read(); 
     Serial.print(">> Nhan lenh tu App Blynk: ");
     Serial.println(blynkCmd);
 
-    if (blynkCmd == '1') { // Yêu cầu MỞ Cổng Chính
+    if (blynkCmd == '1') { 
       trangThaiCong = true;
       servoCong.write(90);
       Serial.println("=> Thuc thi: MO Cong Chinh");
     } 
-    else if (blynkCmd == '0') { // Yêu cầu ĐÓNG Cổng Chính
+    else if (blynkCmd == '0') { 
       trangThaiCong = false;
       servoCong.write(0);
       Serial.println("=> Thuc thi: DONG Cong Chinh");
     }
-    else if (blynkCmd == 'O') { // Yêu cầu KÉO LÊN Cửa Garage
+    else if (blynkCmd == 'O') { 
       servoGarage.write(TOC_DO_LEN);
       trangThaiGarage = DANG_LEN;
       Serial.println("=> Thuc thi: KEO Garage LEN");
     }
-    else if (blynkCmd == 'C') { // Yêu cầu HẠ XUỐNG Cửa Garage
+    else if (blynkCmd == 'C') { 
       servoGarage.write(TOC_DO_XUONG);
       trangThaiGarage = DANG_XUONG;
       Serial.println("=> Thuc thi: HA Garage XUONG");
@@ -222,11 +179,14 @@ void loop() {
     if (!theHienDien1) {               
       theHienDien1 = true;
       trangThaiCong = !trangThaiCong;
+      
       if (trangThaiCong) {
         servoCong.write(90);
+        baoCaoTrangThaiCua('C', true); // Truyền ngược về App
         Serial.println("Quet the 1 -> MO Cong Chinh");
       } else {
         servoCong.write(0);
+        baoCaoTrangThaiCua('C', false); // Truyền ngược về App
         Serial.println("Quet the 1 -> DONG Cong Chinh");
       }
     }
@@ -238,11 +198,14 @@ void loop() {
   bool nutCong = pcf.read(P_NUT_CONG);
   if (nutCong == LOW && lastNutCong == HIGH) { 
     trangThaiCong = !trangThaiCong;
+    
     if (trangThaiCong) {
       servoCong.write(90);
+      baoCaoTrangThaiCua('C', true); // Truyền ngược về App
       Serial.println("Nut nhan -> MO Cong Chinh");
     } else {
       servoCong.write(0);
+      baoCaoTrangThaiCua('C', false); // Truyền ngược về App
       Serial.println("Nut nhan -> DONG Cong Chinh");
     }
     delay(200); 
@@ -264,11 +227,13 @@ void loop() {
         if (!huongTiepTheoLaXuong) {
           servoGarage.write(TOC_DO_LEN); 
           trangThaiGarage = DANG_LEN;
-          Serial.println("Quet the 2 -> Garage di LEN (Nhanh nhat)");
+          baoCaoTrangThaiCua('G', true); // Truyền ngược về App
+          Serial.println("Quet the 2 -> Garage di LEN");
         } else {
           servoGarage.write(TOC_DO_XUONG); 
           trangThaiGarage = DANG_XUONG;
-          Serial.println("Quet the 2 -> Garage di XUONG (Nhanh nhat)");
+          baoCaoTrangThaiCua('G', false); // Truyền ngược về App
+          Serial.println("Quet the 2 -> Garage di XUONG");
         }
       } else {
         servoGarage.write(90); 
@@ -306,9 +271,11 @@ void loop() {
       if (!huongTiepTheoLaXuong) {
         servoGarage.write(TOC_DO_LEN); 
         trangThaiGarage = DANG_LEN;
+        baoCaoTrangThaiCua('G', true); // Truyền ngược về App
       } else {
         servoGarage.write(TOC_DO_XUONG); 
         trangThaiGarage = DANG_XUONG;
+        baoCaoTrangThaiCua('G', false); // Truyền ngược về App
       }
     } else {
       servoGarage.write(90);

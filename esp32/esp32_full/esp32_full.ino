@@ -21,18 +21,19 @@
      - Servo Sào (360): VCC -> 5V | GND -> GND | SIG -> GPIO 23
      - Cảm biến mưa LM393: VCC -> 3.3V | GND -> GND | D0 -> GPIO 35
      
-  7. [PHẦN MỚI] GIAO TIẾP SANG ARDUINO ĐỂ ĐIỀU KHIỂN APP BLYNK:
+  7. [GIAO TIẾP 2 CHIỀU VỚI ARDUINO ĐỂ ĐỒNG BỘ BLYNK]:
      - ESP32 Chân TX2 (GPIO 17) ➔ Nối trực tiếp sang Chân D2 (RX) của Arduino UNO
+     - ESP32 Chân RX2 (GPIO 16) ➔ Nối vào điểm giữa của mạch chia áp (từ chân D9 Arduino)
      - Chân GND của ESP32 ➔ Nối chung với dải GND của Arduino để đồng bộ mass
 ====================================================================================
 */
 
-// --- CẤU HÌNH THÔNG SỐ BLYNK IOT (Thay thế bằng thông tin trên tài khoản của bạn) ---
+// --- CẤU HÌNH THÔNG SỐ BLYNK IOT ---
 #define BLYNK_TEMPLATE_ID "TMPL6dffk8LTe"
 #define BLYNK_TEMPLATE_NAME "SMART HOUSE ANPHUCDATKHOA"
 #define BLYNK_AUTH_TOKEN "PqARr5-XhktZ9M_LFw7R101R2TEIysMq"
 
-#define BLYNK_PRINT Serial // Bật tính năng in lịch sử kết nối Blynk lên máy tính
+#define BLYNK_PRINT Serial 
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
@@ -46,12 +47,12 @@
 
 // --- THÔNG TIN KHAI BÁO MẠNG WIFI ---
 char auth[] = BLYNK_AUTH_TOKEN;
-char ssid[] = "WIFI_CUA_PHUC";  // Thay bằng tên WiFi
-char pass[] = "TEST_IOT";     // Thay bằng mật khẩu WiFi
+char ssid[] = "WIFI_CUA_PHUC";  
+char pass[] = "TEST_IOT";     
 
 // --- ĐỊNH NGHĨA CHÂN GIAO TIẾP UART2 ---
 #define TX2_PIN 17
-#define RX2_PIN 16 // Khai báo cho đủ cấu trúc hàm, không cần nối dây chân này
+#define RX2_PIN 16 
 
 // ================= CẤU HÌNH GIAI ĐOẠN 1: LCD =================
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -102,29 +103,29 @@ unsigned long thoiGianBatDauQuay = 0;
 
 
 // ====================================================================================
-// [PHẦN MỚI] ĐÓN TÍN HIỆU TỪ APP BLYNK VÀ CHUYỂN TIẾP SANG ARDUINO
+// ĐÓN TÍN HIỆU TỪ APP BLYNK VÀ CHUYỂN TIẾP SANG ARDUINO
 // ====================================================================================
 
 // --- Chân ảo V1: Điều khiển CỔNG CHÍNH trên mạch Arduino ---
 BLYNK_WRITE(V1) {
-  int value = param.asInt(); // Đọc trạng thái nút bấm (0 hoặc 1)
+  int value = param.asInt(); 
   if (value == 1) {
-    Serial2.write('1'); // Ký tự quy ước '1' = Mở cổng Arduino
+    Serial2.write('1'); 
     Serial.println("Blynk App -> Gui lenh '1' (MO CONG) sang Arduino");
   } else {
-    Serial2.write('0'); // Ký tự quy ước '0' = Đóng cổng Arduino
+    Serial2.write('0'); 
     Serial.println("Blynk App -> Gui lenh '0' (DONG CONG) sang Arduino");
   }
 }
 
 // --- Chân ảo V2: Điều khiển CỬA CUỐN GARAGE trên mạch Arduino ---
 BLYNK_WRITE(V2) {
-  int value = param.asInt(); // Đọc trạng thái nút bấm (0 hoặc 1)
+  int value = param.asInt(); 
   if (value == 1) {
-    Serial2.write('O'); // Ký tự quy ước 'O' = Cuốn cửa Garage lên
+    Serial2.write('O'); 
     Serial.println("Blynk App -> Gui lenh 'O' (MO GARAGE) sang Arduino");
   } else {
-    Serial2.write('C'); // Ký tự quy ước 'C' = Hạ cửa Garage xuống
+    Serial2.write('C'); 
     Serial.println("Blynk App -> Gui lenh 'C' (DONG GARAGE) sang Arduino");
   }
 }
@@ -133,17 +134,13 @@ BLYNK_WRITE(V2) {
 void setup() {
   Serial.begin(115200);
   
-  // Khởi tạo đường truyền truyền tín hiệu sang mạch Arduino (Tốc độ Baudrate 9600 khớp với Arduino)
   Serial2.begin(9600, SERIAL_8N1, RX2_PIN, TX2_PIN);
   
-  // Khởi động cổng kết nối server Blynk IoT
   Serial.println("Dang ket noi den Blynk Cloud...");
   Blynk.begin(auth, ssid, pass);
   
-  // Tắt mạch chống sụt áp nguồn (Brownout Detector)
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 
-  // Khởi tạo các chân tín hiệu I/O
   pinMode(BUZZER_PIN, OUTPUT);
   pinMode(LED_PIN, OUTPUT);
   pinMode(NUT_DEN_PIN, INPUT_PULLUP);
@@ -153,17 +150,14 @@ void setup() {
   digitalWrite(BUZZER_PIN, LOW); 
   digitalWrite(LED_PIN, LOW); 
 
-  // Khởi tạo Servo Cửa Trước (180 độ) 
   servoCong.setPeriodHertz(50); 
   servoCong.attach(SERVO_CONG_PIN, 500, 2400); 
   servoCong.write(0); 
 
-  // Khởi tạo Servo Sào Phơi (360 độ)
   servo360.setPeriodHertz(50);
   servo360.attach(SERVO_360_PIN, 1000, 2000); 
   servo360.write(90); 
 
-  // Khởi tạo LCD
   Wire.begin(21, 22);
   lcd.init();
   lcd.backlight();
@@ -173,13 +167,39 @@ void setup() {
 }
 
 void loop() {
-  Blynk.run(); // Luôn luôn duy trì cổng giao tiếp kết nối Internet và App điện thoại
+  Blynk.run(); 
+
+  // ====================================================================================
+  // [PHẦN MỚI] ĐÓN BÁO CÁO TỪ ARDUINO & CẬP NHẬT TRẠNG THÁI LÊN APP BLYNK
+  // ====================================================================================
+  if (Serial2.available() > 0) {
+    char dataTuArduino = Serial2.read();
+    
+    // Đồng bộ Cổng Chính (Chân V1)
+    if (dataTuArduino == 'U') {
+      Blynk.virtualWrite(V1, 1); 
+      Serial.println("-> Dong bo App: Cong Chinh MO");
+    } 
+    else if (dataTuArduino == 'u') {
+      Blynk.virtualWrite(V1, 0); 
+      Serial.println("-> Dong bo App: Cong Chinh DONG");
+    }
+    
+    // Đồng bộ Garage (Chân V2)
+    else if (dataTuArduino == 'V') {
+      Blynk.virtualWrite(V2, 1); 
+      Serial.println("-> Dong bo App: Garage MO");
+    } 
+    else if (dataTuArduino == 'v') {
+      Blynk.virtualWrite(V2, 0); 
+      Serial.println("-> Dong bo App: Garage DONG");
+    }
+  }
 
   // ---------------- GIAI ĐOẠN 6: XỬ LÝ SÀO PHƠI ĐỒ (SERVO 360) ----------------
   if (!dang_bao_chay) {
     bool phatHienMua = (digitalRead(RAIN_PIN) == LOW); 
 
-    // BẮT ĐẦU MƯA
     if (phatHienMua && !dangCoMua) {
       dangCoMua = true;
       dangDiChuyen = true;
@@ -188,7 +208,6 @@ void loop() {
       servo360.write(180); 
       Serial.println(">> TROI MUA! Keo sao phoi do vao trong...");
     }
-    // HẾT MƯA
     else if (!phatHienMua && dangCoMua) {
       dangCoMua = false;
       dangDiChuyen = true;
@@ -198,7 +217,6 @@ void loop() {
       Serial.println(">> TROI QUANG! Day sao phoi do ra ngoai...");
     }
 
-    // TỰ ĐỘNG DỪNG KHI QUAY ĐỦ 5 GIÂY
     if (dangDiChuyen && (millis() - thoiGianBatDauQuay >= 5000)) {
       servo360.write(90); 
       dangDiChuyen = false;
