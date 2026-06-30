@@ -54,7 +54,7 @@ String pin_nhap = "";
 // ================= CẤU HÌNH GIAI ĐOẠN 3: BÁO CHÁY =================
 #define BUZZER_PIN 15 
 #define MQ2_PIN 34
-#define NGUONG_BAO_CHAY 2500 
+#define NGUONG_BAO_CHAY 1800 
 bool dang_bao_chay = false;
 
 // ================= CẤU HÌNH GIAI ĐOẠN 4: ĐÈN LED =================
