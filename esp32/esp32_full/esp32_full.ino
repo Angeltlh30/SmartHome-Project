@@ -47,8 +47,8 @@
 
 // --- THÔNG TIN KHAI BÁO MẠNG WIFI ---
 char auth[] = BLYNK_AUTH_TOKEN;
-char ssid[] = "WIFI_CUA_PHUC";  
-char pass[] = "TEST_IOT";     
+char ssid[] = "abcxyz";
+char pass[] = "1303040506";     
 
 // --- ĐỊNH NGHĨA CHÂN GIAO TIẾP UART2 ---
 #define TX2_PIN 17
@@ -76,7 +76,7 @@ String pin_nhap = "";
 // ================= CẤU HÌNH GIAI ĐOẠN 3: BÁO CHÁY =================
 #define BUZZER_PIN 15 
 #define MQ2_PIN 34
-#define NGUONG_BAO_CHAY 2500
+#define NGUONG_BAO_CHAY 3000
 bool dang_bao_chay = false;
 
 // ================= CẤU HÌNH GIAI ĐOẠN 4: ĐÈN LED =================
@@ -136,10 +136,10 @@ void setup() {
   
   Serial2.begin(9600, SERIAL_8N1, RX2_PIN, TX2_PIN);
   
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+  
   Serial.println("Dang ket noi den Blynk Cloud...");
   Blynk.begin(auth, ssid, pass);
-  
-  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 
   pinMode(BUZZER_PIN, OUTPUT);
   pinMode(LED_PIN, OUTPUT);
