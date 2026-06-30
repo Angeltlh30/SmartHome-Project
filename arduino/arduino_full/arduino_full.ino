@@ -53,6 +53,10 @@
      * Chân điều khiển ĐỘC LẬP cho MODULE RFID 2 (Garage):
        - SDA (SS/CS)  --> Chân D4
        - RST (Reset)  --> Chân A1 (Dùng kỹ thuật bật/tắt nguồn chống nhiễu)
+       
+  6. [PHẦN MỚI] GIAO TIẾP VỚI MẠCH ESP32 (NHẬN LỆNH TỪ APP BLYNK)
+     - Chân D2 (RX)   <-- Nối với chân TX2 (GPIO 17) của mạch ESP32
+     - GND            <-- Nối chung với GND của mạch ESP32
   ====================================================================================
 */
 
@@ -61,6 +65,10 @@
 #include <SPI.h>
 #include <MFRC522.h>
 #include <PCF8574.h>
+#include <SoftwareSerial.h> // Thư viện đọc tín hiệu từ ESP32
+
+// --- CẤU HÌNH GIAO TIẾP VỚI ESP32 ---
+SoftwareSerial espSerial(2, 3); // RX = Chân 2 (nhận tín hiệu), TX = Chân 3 (không dùng)
 
 // --- CẤU HÌNH ĐỊA CHỈ PCF8574 ---
 PCF8574 pcf(0x20); 
@@ -118,6 +126,8 @@ const int NGUONG_KHOANG_CACH = 20;
 
 void setup() {
   Serial.begin(9600);
+  espSerial.begin(9600); // Khởi động cổng nghe ngóng ESP32
+  
   Wire.begin(); 
   SPI.begin();  
   
@@ -144,10 +154,40 @@ void setup() {
   servoGarage.attach(SERVO_GARAGE_PIN);
   servoGarage.write(90); 
 
-  Serial.println("He thong da san sang! (Da tang MAX toc do Servo)");
+  Serial.println("He thong da san sang! (Da tich hop lang nghe App Blynk tu ESP32)");
 }
 
 void loop() {
+  // =================================================================================
+  // [PHẦN MỚI] ĐỌC LỆNH TỪ APP BLYNK (THÔNG QUA ESP32) ĐỂ KÍCH HOẠT ĐỘNG CƠ
+  // =================================================================================
+  if (espSerial.available() > 0) {
+    char blynkCmd = espSerial.read(); 
+    Serial.print(">> Nhan lenh tu App Blynk: ");
+    Serial.println(blynkCmd);
+
+    if (blynkCmd == '1') { // Yêu cầu MỞ Cổng Chính
+      trangThaiCong = true;
+      servoCong.write(90);
+      Serial.println("=> Thuc thi: MO Cong Chinh");
+    } 
+    else if (blynkCmd == '0') { // Yêu cầu ĐÓNG Cổng Chính
+      trangThaiCong = false;
+      servoCong.write(0);
+      Serial.println("=> Thuc thi: DONG Cong Chinh");
+    }
+    else if (blynkCmd == 'O') { // Yêu cầu KÉO LÊN Cửa Garage
+      servoGarage.write(TOC_DO_LEN);
+      trangThaiGarage = DANG_LEN;
+      Serial.println("=> Thuc thi: KEO Garage LEN");
+    }
+    else if (blynkCmd == 'C') { // Yêu cầu HẠ XUỐNG Cửa Garage
+      servoGarage.write(TOC_DO_XUONG);
+      trangThaiGarage = DANG_XUONG;
+      Serial.println("=> Thuc thi: HA Garage XUONG");
+    }
+  }
+
   // ---------------- 1. ĐÈN TỰ ĐỘNG CỔNG ----------------
   int kcCong = docKhoangCach(TRIG_CONG, ECHO_CONG); 
   if (kcCong > 0 && kcCong < NGUONG_KHOANG_CACH) {
