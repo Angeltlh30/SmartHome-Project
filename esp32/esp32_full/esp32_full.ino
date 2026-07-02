@@ -220,6 +220,18 @@ void loop() {
     else if (dataTuArduino == 'u') { Blynk.virtualWrite(V1, 0); }
     else if (dataTuArduino == 'V') { Blynk.virtualWrite(V2, 1); } 
     else if (dataTuArduino == 'v') { Blynk.virtualWrite(V2, 0); }
+
+    // [BỔ SUNG] Lắng nghe trạng thái Đèn Gara từ nút bấm vật lý
+    else if (dataTuArduino == 'W') { 
+      Blynk.virtualWrite(V10, 1); 
+      terminal.println("=> Nut nhan (Arduino): BAT den Gara"); 
+      terminal.flush();
+    }
+    else if (dataTuArduino == 'w') { 
+      Blynk.virtualWrite(V10, 0); 
+      terminal.println("=> Nut nhan (Arduino): TAT den Gara"); 
+      terminal.flush();
+    }
     
     // --- XỬ LÝ THẺ TỪ CỔNG CHÍNH ---
     else if (dataTuArduino == 'R') {
@@ -274,9 +286,37 @@ void loop() {
   // --- CẢM BIẾN MƯA ---
   if (!dang_bao_chay) {
     bool phatHienMua = (digitalRead(RAIN_PIN) == LOW); 
-    if (phatHienMua && !dangCoMua) { dangCoMua = true; dangDiChuyen = true; thoiGianBatDauQuay = millis(); servo360.write(180); }
-    else if (!phatHienMua && dangCoMua) { dangCoMua = false; dangDiChuyen = true; thoiGianBatDauQuay = millis(); servo360.write(0); }
-    if (dangDiChuyen && (millis() - thoiGianBatDauQuay >= 5000)) { servo360.write(90); dangDiChuyen = false; }
+    
+    // Khi bắt đầu mưa -> Kéo vào trong (Góc 180)
+    if (phatHienMua && !dangCoMua) { 
+      dangCoMua = true; 
+      dangDiChuyen = true; 
+      thoiGianBatDauQuay = millis(); 
+      servo360.write(180); 
+      
+      // Bổ sung đồng bộ lên App
+      Blynk.virtualWrite(V12, 0); // Tắt nút V12
+      terminal.println("=> Cam bien: Troi MUA, tu dong KEO SAO DO VAO");
+      terminal.flush();
+    }
+    // Khi tạnh mưa -> Đẩy ra ngoài (Góc 0)
+    else if (!phatHienMua && dangCoMua) { 
+      dangCoMua = false; 
+      dangDiChuyen = true; 
+      thoiGianBatDauQuay = millis(); 
+      servo360.write(0); 
+      
+      // Bổ sung đồng bộ lên App
+      Blynk.virtualWrite(V12, 1); // Bật nút V12
+      terminal.println("=> Cam bien: TANH MUA, tu dong DAY SAO DO RA");
+      terminal.flush();
+    }
+    
+    // Tự động ngắt động cơ sau 5 giây
+    if (dangDiChuyen && (millis() - thoiGianBatDauQuay >= 5000)) { 
+      servo360.write(90); 
+      dangDiChuyen = false; 
+    }
   }
 
   // --- BÁO CHÁY ---
@@ -287,12 +327,26 @@ void loop() {
       servoCong.write(0); trangThaiCong = true; // Mở cửa thoát hiểm
       Blynk.virtualWrite(V11, 1);
       servo360.write(90); dangDiChuyen = false; dang_bao_chay = true;
+      
+      // Bổ sung ghi log khi phát hiện cháy
+      terminal.println("!!! KHAN CAP: PHAT HIEN CHAY NO !!!");
+      terminal.println("=> He thong: Tu dong MO TOANG cua phong khach de thoat hiem.");
+      terminal.flush();
     }
     digitalWrite(BUZZER_PIN, HIGH); delay(100); digitalWrite(BUZZER_PIN, LOW); delay(100);
     return; 
   } 
   else {
-    if (dang_bao_chay) { digitalWrite(BUZZER_PIN, LOW); dang_bao_chay = false; hienThiTrangThaiBanDau(); }
+    if (dang_bao_chay) { 
+      digitalWrite(BUZZER_PIN, LOW); 
+      dang_bao_chay = false; 
+      
+      // Bổ sung ghi log khi an toàn trở lại
+      terminal.println("=> He thong: Nong do khoi da an toan. Ngung bao dong.");
+      terminal.flush();
+      
+      hienThiTrangThaiBanDau(); 
+    }
   }
 
   // --- NÚT ĐÈN PHÒNG KHÁCH ---

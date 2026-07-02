@@ -118,7 +118,14 @@ void loop() {
   bool nutDenGarage = digitalRead(NUT_DEN_GARAGE);
   if (nutDenGarage == LOW && lastNutDenGarage == HIGH) { 
     trangThaiDenGarage = !trangThaiDenGarage; 
-    if (trangThaiDenGarage) { pcf.write(P_LED_GARAGE, HIGH); } else { pcf.write(P_LED_GARAGE, LOW); }
+    
+    if (trangThaiDenGarage) { 
+      pcf.write(P_LED_GARAGE, HIGH); 
+      espSerial.write('W'); // Gửi lệnh BẬT lên ESP32
+    } else { 
+      pcf.write(P_LED_GARAGE, LOW); 
+      espSerial.write('w'); // Gửi lệnh TẮT lên ESP32
+    }
     delay(200); 
   }
   lastNutDenGarage = nutDenGarage;
